@@ -57,7 +57,7 @@ func (a *App) Start() {
 	a.MainWindow.CenterOnScreen()
 	a.MainWindow.Show()
 	a.MainWindow.RequestFocus()
-	a.ShowUnlockDialog()
+	a.ShowMainUI()
 	a.FyneApp.Run()
 }
 

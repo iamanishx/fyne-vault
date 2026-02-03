@@ -38,6 +38,7 @@ func NewDB() (*DB, error) {
 
 func (db *DB) InitSchema() error {
 	query := `
+	PRAGMA foreign_keys = ON;
 	CREATE TABLE IF NOT EXISTS secrets (
 		id TEXT PRIMARY KEY,
 		name TEXT NOT NULL,
@@ -45,7 +46,7 @@ func (db *DB) InitSchema() error {
 		updated_at DATETIME
 	);
 	CREATE TABLE IF NOT EXISTS fields (
-		id TEXT PRIMARY KEY,
+		id TEXT,
 		secret_id TEXT,
 		key TEXT,
 		value BLOB,

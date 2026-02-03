@@ -3,10 +3,12 @@ package ui
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 
 	"passvault-fyne/internal/database"
+	"passvault-fyne/pkg/utils"
 )
 
 type FieldEditor struct {
@@ -31,13 +33,18 @@ func NewFieldEditor() *FieldEditor {
 }
 
 func (fe *FieldEditor) AddField(field database.Field) {
+	if field.ID == "" {
+		field.ID = utils.NewUUID()
+	}
 	keyEntry := widget.NewEntry()
 	keyEntry.SetPlaceHolder("Field Name")
 	keyEntry.Text = field.Key
+	keyEntry.Wrapping = fyne.TextWrapOff
 
 	valueEntry := widget.NewEntry()
 	valueEntry.SetPlaceHolder("Value")
 	valueEntry.Text = string(field.Value)
+	valueEntry.Wrapping = fyne.TextWrapOff
 
 	sensitiveCheck := widget.NewCheck("Sensitive", nil)
 	sensitiveCheck.Checked = field.IsSensitive
@@ -55,7 +62,14 @@ func (fe *FieldEditor) AddField(field database.Field) {
 	})
 	row.RemoveBtn = removeBtn
 
-	rowContent := container.NewGridWithColumns(3, keyEntry, valueEntry, sensitiveCheck)
+	keyWrap := container.NewMax(container.NewPadded(keyEntry))
+	valueWrap := container.NewMax(container.NewPadded(valueEntry))
+	rowContent := container.NewGridWithColumns(4,
+		container.NewMax(keyWrap),
+		container.NewMax(valueWrap),
+		container.NewHBox(sensitiveCheck, layout.NewSpacer()),
+		layout.NewSpacer(),
+	)
 	finalRow := container.NewBorder(nil, nil, nil, removeBtn, rowContent)
 	row.Row = finalRow
 
@@ -78,8 +92,12 @@ func (fe *FieldEditor) RemoveField(row *FieldRow) {
 func (fe *FieldEditor) GetFields() []database.Field {
 	var fields []database.Field
 	for _, row := range fe.Fields {
+		id := row.ID
+		if id == "" {
+			id = utils.NewUUID()
+		}
 		fields = append(fields, database.Field{
-			ID:          row.ID,
+			ID:          id,
 			Key:         row.KeyEntry.Text,
 			Value:       []byte(row.ValueEntry.Text),
 			IsSensitive: row.Sensitive.Checked,

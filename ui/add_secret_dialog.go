@@ -41,14 +41,23 @@ func (a *App) showSecretDialog(existing *database.SecretEntry) {
 	addFieldBtn := widget.NewButton("Add Field", func() {
 		fieldEditor.AddField(database.Field{ID: utils.NewUUID()})
 	})
+	addFieldBtn.Importance = widget.LowImportance
+
+	nameRow := container.NewBorder(nil, nil, widget.NewLabel("Name"), nil, nameEntry)
+	fieldsHeader := container.NewBorder(nil, nil, widget.NewLabel("Fields"), nil, addFieldBtn)
+	fieldsBox := container.NewVBox(fieldEditor.Container)
+	fieldsCard := canvas.NewRectangle(color.NRGBA{R: 22, G: 22, B: 26, A: 255})
+	fieldsCard.CornerRadius = 10
+	fieldsCard.StrokeColor = color.NRGBA{R: 45, G: 45, B: 52, A: 200}
+	fieldsCard.StrokeWidth = 1
+	fieldsPanel := container.NewMax(fieldsCard, container.NewPadded(fieldsBox))
 
 	content := container.NewVBox(
 		widget.NewLabel("Secret Details"),
-		nameEntry,
+		nameRow,
 		widget.NewSeparator(),
-		widget.NewLabel("Fields"),
-		fieldEditor.Container,
-		addFieldBtn,
+		fieldsHeader,
+		fieldsPanel,
 	)
 
 	card := canvas.NewRectangle(color.NRGBA{R: 18, G: 18, B: 22, A: 255})
