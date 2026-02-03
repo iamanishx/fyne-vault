@@ -25,6 +25,7 @@ func (a *App) showSecretDetails(id string) {
 
 	nameLabel := widget.NewLabelWithStyle(secret.Name, fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	fieldsContainer := container.NewVBox()
+	var contentArea fyne.CanvasObject
 	if secret.Format == "json" || secret.Format == "text" {
 		contentText := secret.Content
 		if secret.Format == "json" {
@@ -46,13 +47,13 @@ func (a *App) showSecretDetails(id string) {
 			a.Clipboard.CopyWithAutoClear(selected, 30*time.Second)
 		})
 		headRow := container.NewHBox(widget.NewLabel("Content:"), layout.NewSpacer(), copyBtn)
-		contentBlock := container.NewVBox(headRow, contentEntry)
-		split := container.NewVSplit(contentBlock, layout.NewSpacer())
+		split := container.NewVSplit(contentEntry, layout.NewSpacer())
+		split.SetOffset(0.8)
 		prefKey := "content_split_offset"
 		prefs := a.FyneApp.Preferences()
-		stored := prefs.FloatWithFallback(prefKey, 0.85)
-		if stored < 0.5 {
-			stored = 0.5
+		stored := prefs.FloatWithFallback(prefKey, 0.8)
+		if stored < 0.4 {
+			stored = 0.4
 		} else if stored > 0.95 {
 			stored = 0.95
 		}
@@ -77,7 +78,7 @@ func (a *App) showSecretDetails(id string) {
 				}
 			}
 		}(a.contentSplitStop)
-		fieldsContainer.Add(split)
+		contentArea = container.NewBorder(headRow, nil, nil, nil, split)
 	} else {
 		for _, field := range secret.Fields {
 			valStr := string(field.Value)
@@ -95,6 +96,7 @@ func (a *App) showSecretDetails(id string) {
 			row := container.NewHBox(keyLabel, valLabel, layout.NewSpacer(), copyBtn)
 			fieldsContainer.Add(row)
 		}
+		contentArea = container.NewVScroll(fieldsContainer)
 	}
 
 	editBtn := widget.NewButton("Edit", func() {
@@ -120,7 +122,11 @@ func (a *App) showSecretDetails(id string) {
 
 	topBar := container.NewBorder(nil, nil, nameLabel, container.NewHBox(editBtn, deleteBtn), nil)
 
-	detailView := container.NewVBox(topBar, widget.NewSeparator(), fieldsContainer)
+	if contentArea == nil {
+		contentArea = container.NewVScroll(fieldsContainer)
+	}
+	contentWrap := container.NewBorder(widget.NewSeparator(), nil, nil, nil, contentArea)
+	detailView := container.NewBorder(topBar, nil, nil, nil, contentWrap)
 
 	split := a.MainWindow.Content().(*container.Split)
 	split.Trailing = container.NewPadded(detailView)
